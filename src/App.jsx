@@ -158,21 +158,44 @@ function App() {
             onClick={() => {
               setSortField((prevState) => ({
                 ...prevState,
-                isReversed: !prevState.isReversed,
+                isReversed: !sortField.isReversed,
               }));
             }}
           >
             Reverse
           </button>
         </div>
-
-        <input
-          type='search'
-          value={filterField.query}
-          onChange={(event) => {
-            setFilterField({ ...filterField, query: event.target.value });
-          }}
-        />
+        <div className=' is-flex is-flex-direction-column'>
+          <div className='select is-primary'>
+            <select
+              style={{ width: '270px' }}
+              value={sortField.sortType}
+              onChange={(event) => {
+                const selectedSortType = event.target.value;
+                setSortField((prevState) => ({
+                  ...prevState,
+                  sortType: selectedSortType,
+                }));
+              }}
+            >
+              <option value=''>--Please choose an option--</option>
+              <option value={SORT_FIELD_ALPHABETICALLY}>
+                Sorted alphabetically by name
+              </option>
+              <option value={SORT_FIELD_BY_AGE}>Sorted by age</option>
+            </select>
+          </div>
+          <input
+            className='input is-primary mt-3 is-normal control '
+            style={{ width: '270px' }}
+            type='search'
+            value={filterField.query}
+            placeholder='Please enter a search term'
+            onChange={(event) => {
+              setFilterField({ ...filterField, query: event.target.value });
+            }}
+          />
+        </div>
       </div>
       <h1 className='title'>People table</h1>
 
