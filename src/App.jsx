@@ -5,14 +5,17 @@ import './App.scss';
 import cn from 'classnames';
 
 import peopleFromServer from '../public/api/people.json';
+import { Button } from './components/Button/Button';
+import { PeopleList } from './components/PeopleList/PeopleList';
 
 const SORT_FIELD_ALPHABETICALLY = 'Sorted alphabetically by name';
 const SORT_FIELD_BY_AGE = 'Sorted by age';
+
 function getPreparedPeople(people, filterField, sortField) {
-  let visiblePeople = [...people];
+  let preparedPeople = [...people];
 
   if (filterField.query) {
-    visiblePeople = visiblePeople.filter((person) => {
+    preparedPeople = preparedPeople.filter((person) => {
       const { name } = person;
       const foundPerson = name
         .toLowerCase()
@@ -24,25 +27,26 @@ function getPreparedPeople(people, filterField, sortField) {
   }
 
   if (filterField.gender !== 'all') {
-    visiblePeople = visiblePeople.filter(
+    preparedPeople = preparedPeople.filter(
       (person) => person.sex === filterField.gender
     );
   }
 
   if (sortField.sortType === SORT_FIELD_ALPHABETICALLY) {
-    visiblePeople = visiblePeople.sort((a, b) => a.name.localeCompare(b.name));
+    preparedPeople = preparedPeople.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
   }
 
   if (sortField.sortType === SORT_FIELD_BY_AGE) {
-    visiblePeople = visiblePeople.sort((a, b) => a.born - b.born);
+    preparedPeople = preparedPeople.sort((a, b) => a.born - b.born);
   }
 
   if (sortField.isReversed) {
-    console.log('reverse', sortField.isReversed);
-    visiblePeople.reverse();
+    preparedPeople.reverse();
   }
 
-  return visiblePeople;
+  return preparedPeople;
 }
 
 function App() {
@@ -74,28 +78,31 @@ function App() {
     setSelectedPerson(selectedPeople.filter((p) => p.slug !== person.slug));
   };
 
+  const resetButton = () => {
+    setFilterField({ query: '', gender: 'all' });
+    setSortField({ sortType: '', isReversed: false });
+  };
+
   return (
     <div className='box'>
       <div className='block'>
         <div className='buttons has-addons'>
-          <button
-            type='button'
-            className={cn('button', {
+          <Button
+            className={cn({
               'is-info': filterField.gender === 'all',
             })}
             onClick={() =>
               setFilterField((prevState) => ({
                 ...prevState,
-                ...filterField,
                 gender: 'all',
               }))
             }
           >
             All
-          </button>
-          <button
-            type='button'
-            className={cn('button', { 'is-info': filterField.gender === 'm' })}
+          </Button>
+
+          <Button
+            className={cn({ 'is-info': filterField.gender === 'm' })}
             onClick={() =>
               setFilterField((prevState) => ({
                 ...prevState,
@@ -105,10 +112,10 @@ function App() {
             }
           >
             Man
-          </button>
-          <button
-            type='button'
-            className={cn('button', { 'is-info': filterField.gender === 'f' })}
+          </Button>
+
+          <Button
+            className={cn({ 'is-info': filterField.gender === 'f' })}
             onClick={() =>
               setFilterField((prevState) => ({
                 ...prevState,
@@ -118,13 +125,12 @@ function App() {
             }
           >
             Women
-          </button>
+          </Button>
         </div>
 
         <div className='buttons has-addons'>
-          <button
-            type='button'
-            className={cn('button', {
+          <Button
+            className={cn({
               'is-info': sortField.sortType === SORT_FIELD_ALPHABETICALLY,
             })}
             onClick={() => {
@@ -134,12 +140,12 @@ function App() {
               }));
             }}
           >
+            {' '}
             Sorted alphabetically by name
-          </button>
+          </Button>
 
-          <button
-            type='button'
-            className={cn('button', {
+          <Button
+            className={cn({
               'is-info': sortField.sortType === SORT_FIELD_BY_AGE,
             })}
             onClick={() => {
@@ -150,11 +156,10 @@ function App() {
             }}
           >
             Sorted by age
-          </button>
+          </Button>
 
-          <button
-            type='button'
-            className={cn('button', { 'is-info': sortField.isReversed })}
+          <Button
+            className={cn({ 'is-info': sortField.isReversed })}
             onClick={() => {
               setSortField((prevState) => ({
                 ...prevState,
@@ -163,7 +168,7 @@ function App() {
             }}
           >
             Reverse
-          </button>
+          </Button>
         </div>
         <div className=' is-flex is-flex-direction-column'>
           <div className='select is-primary'>
@@ -196,6 +201,14 @@ function App() {
             }}
           />
         </div>
+
+        <button
+          type='button'
+          className='button mt-3 is-info is-outlined'
+          onClick={resetButton}
+        >
+          Reset
+        </button>
       </div>
       <h1 className='title'>People table</h1>
 
@@ -214,35 +227,12 @@ function App() {
         </thead>
 
         <tbody>
-          {visiblePeople.map((person) => (
-            <tr
-              key={person.slug}
-              className={isSelected(person) ? 'has-background-warning' : ''}
-            >
-              <td>
-                {isSelected(person) ? (
-                  <button
-                    type='button'
-                    className='button is-small is-rounded is-danger'
-                    onClick={() => removePerson(person)}
-                  >
-                    <span className='icon is-small'>-</span>
-                  </button>
-                ) : (
-                  <button
-                    type='button'
-                    className='button is-small is-rounded is-success'
-                    onClick={() => addPerson(person)}
-                  >
-                    <span className='icon is-small'>+</span>
-                  </button>
-                )}
-              </td>
-              <td>{person.name}</td>
-              <td>{person.sex}</td>
-              <td>{person.born}</td>
-            </tr>
-          ))}
+          <PeopleList
+            visiblePeople={visiblePeople}
+            addPerson={addPerson}
+            removePerson={removePerson}
+            isSelected={isSelected}
+          />
         </tbody>
       </table>
     </div>
